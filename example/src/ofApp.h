@@ -20,6 +20,9 @@ public:
     // Audio
     //------
     void audioOut(ofSoundBuffer &buffer);
+
+	ofSoundStream soundStream;
+
     
     void play(float &lAudioOut, float &rAudioOut);
     bool isNoise;

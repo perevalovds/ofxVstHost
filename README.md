@@ -21,9 +21,9 @@ Installation
 
 Free VST
 ------------
+* Example includes MVerb https://rekkerd.org/martin-eastwood-audio-free-plugins/
 * List of free VST effects: https://blog.landr.com/best-free-vst-plugins/#bestfreevsteffects
 * http://magnus.smartelectronix.com/#Ambience
-* MVerb https://rekkerd.org/martin-eastwood-audio-free-plugins/
 
 Dependencies
 ------------

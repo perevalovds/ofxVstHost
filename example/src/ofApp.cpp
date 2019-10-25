@@ -37,8 +37,38 @@ void ofApp::setup(){
     //loadVst(); //press 'l' to load vst
 	isVstActive = true; //false;
     
-    
-    ofSoundStreamSetup(2, 0, this, sampleRate, bufferSize, 4);
+	//-----------------------------------------------------
+	//starting sound stream
+	soundStream.printDeviceList();
+
+	ofSoundStreamSettings settings;
+
+	// if you want to set the device id to be different than the default:
+	//
+	//	auto devices = soundStream.getDeviceList();
+	//	settings.setOutDevice(devices[3]);
+
+	// you can also get devices for an specific api:
+	//
+	//	auto devices = soundStream.getDeviceList(ofSoundDevice::Api::PULSE);
+	//	settings.setOutDevice(devices[0]);
+
+
+	auto devices = soundStream.getDeviceList(ofSoundDevice::Api::MS_DS);
+	settings.setOutDevice(devices[0]);
+
+	settings.setOutListener(this);
+	settings.sampleRate = sampleRate;
+	settings.numOutputChannels = 2;
+	settings.numInputChannels = 0;
+	settings.bufferSize = bufferSize;
+	settings.numBuffers = 4;
+
+	soundStream.setup(settings);
+
+	cout << "Press L to load VST" << endl;
+	
+    //ofSoundStreamSetup(2, 0, this, sampleRate, bufferSize, 4);
 }
 
 //--------------------------------------------------------------
@@ -54,6 +84,9 @@ void ofApp::draw(){
         str += vstHost.listParameterValues(i) + "\n";
     }
     
+	if (vstHost.getNumEffects() == 0) {
+		str = "Press L to load VST";
+	}
     ofSetColor(255);
     ofDrawBitmapStringHighlight(str, 20, 20);
 }
