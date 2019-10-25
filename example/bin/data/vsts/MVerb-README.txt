@@ -1,0 +1,1 @@
+MVerb is a free VST by Martin Eastwood. It's taken from https://rekkerd.org/martin-eastwood-audio-free-plugins/

@@ -28,14 +28,14 @@ void ofApp::setup(){
     
     // mapping frequencies from Hz into full oscillations of sin() (two pi)
     wavePhaseStep = (frequency / sampleRate) * TWO_PI;
-    pulsePhaseStep = (0.5 / sampleRate) * TWO_PI;
+	pulsePhaseStep = (1.5 / sampleRate) * TWO_PI; //(0.5 / sampleRate) * TWO_PI;
     
     
     vstHost.setup(sampleRate, bufferSize);
     
     
-    //loadVst();
-    isVstActive = false;
+    //loadVst(); //press 'l' to load vst
+	isVstActive = true; //false;
     
     
     ofSoundStreamSetup(2, 0, this, sampleRate, bufferSize, 4);
@@ -62,20 +62,19 @@ void ofApp::draw(){
 //--------------------------------------------------------------
 void ofApp::loadVst(void)
 {
-    string vstPath = ofToDataPath("vsts/MVerb");
+	string folder = "D:\\of_v0.10.1_vs2017_release\\addons\\ofxVstHost\\example\\bin\\data\\vsts\\";
+	string vstPath = 
+	folder + "MVerb.dll";
+	//folder + "Ambience.dll";
+	//folder + "adelay.dll";
+
+	
+
+		
+		//string vstPath = ofToDataPath("vsts/MVerb");
     //string vstPath = ofToDataPath("vsts/mda-Delay");
     
-#if defined __APPLE__
-    vstPath += ".vst";
-#elif defined _WIN32
-    vstPath += ".dll";
-#elif defined __linux__
-    vstPath += ".so";
-#endif
-    //vstPath = "/home/nuc/Documents/of_v0.8.4_linux_release/apps/mashmachineWorkspace/mashmachine/bin/data/vst/linux/HiLoFilter.so";
-    
     //ofSetLogLevel("ofxVSTHost", OF_LOG_VERBOSE);
-    
     
     /*if(vstHost){
         delete vstHost;
@@ -88,8 +87,13 @@ void ofApp::loadVst(void)
     vstHost = new ofxVstHost();
     vstHost->setup(vstPath);*/
     
-    vstHost.load(vstPath);
-    
+    bool loaded = vstHost.load(vstPath);
+	if (loaded) {
+		cout << "Loaded VST " << vstPath << endl;
+	}
+	else {
+		cout << "Error loading VST " << vstPath << endl;
+ 	}
     
     /*if(vstHost.size() > 0){
         for (int i = 0; i < vstHost.size(); i++) {
@@ -133,8 +137,8 @@ void ofApp::play(float &lAudioOut, float &rAudioOut)
 {
     // Noise
     if (isNoise){
-        lAudioOut = ofRandom(0, 1);
-        rAudioOut = ofRandom(0, 1);
+        lAudioOut = ofRandom(0, 1) * 0.2;
+        rAudioOut = ofRandom(0, 1) * 0.2;
     }
     else {
         // build up a chord out of sine waves at 3 different frequencies
@@ -143,14 +147,14 @@ void ofApp::play(float &lAudioOut, float &rAudioOut)
         float sampleHi = sin(wavePhase * 2.0);
         
         // pulse each sample's volume
-        sampleLow *= sin(pulsePhase);
+        sampleLow *= ofSign(sin(pulsePhase));
         sampleMid *= sin(pulsePhase * 1.04);
         sampleHi *= sin(pulsePhase * 1.09);
         
         float fullSample = (sampleLow + sampleMid + sampleHi);
         
         // reduce the full sample's volume so it doesn't exceed 1
-        fullSample *= 0.3;
+		fullSample *= 0.2; //0.3;
         
         // write the computed sample to the left and right channels
         lAudioOut = fullSample;
@@ -207,12 +211,12 @@ void ofApp::mouseDragged(int x, int y, int button){
 
 //--------------------------------------------------------------
 void ofApp::mousePressed(int x, int y, int button){
-    isVstActive = true;
+    //isVstActive = true;
     setVstParameter(button, x, y);
 }
 
 //--------------------------------------------------------------
 void ofApp::mouseReleased(int x, int y, int button){
-    isVstActive = false;
+    //isVstActive = false;
     setVstParameter(button, x, y);
 }

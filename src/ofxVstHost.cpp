@@ -64,52 +64,51 @@ void ofxVstHost::setup(float sampleRate, int blockSize)
 
 
 //--------------------------------------------------------------
-bool ofxVstHost::load(string path, string nameInfo)
+bool ofxVstHost::load(string path, string nameInfo, bool to_data_path)
 {
-    ofLogVerbose("ofxVstHost") << "load(" << path << ")";
-    
-    if (!checkPlatform ())
-    {
-        ofLogVerbose("ofxVstHost") << "Platform verification failed! Please check your Compiler Settings!";
-        return false;
-    }
-    
-    // Check that this module has not been already loaded
-    int indexExisting = -1;
-    for(int i = 0; i < _plugins.size(); i++) {
-        // If we find the same name in our vector means we already loaded this library
-        if(_plugins[i].path == path) {
-            indexExisting = i;
-            ofLogVerbose("ofxVstHost") << "Library " << path << " already exist at index " << i << ". Not loading it again.";
-        }
-    }
-    
-    
-    // Load new library if it is not in our list already
-    if(indexExisting == -1){
-        PluginLoader loader;
-        if (!loader.loadLibrary (path.c_str()))
+	if (to_data_path) {
+		path = ofToDataPath(path);
+	}
+	ofLogVerbose("ofxVstHost") << "load(" << path << ")";
+
+	if (!checkPlatform())
+	{
+		ofLogVerbose("ofxVstHost") << "Platform verification failed! Please check your Compiler Settings!";
+		return false;
+	}
+
+	// Check that this module has not been already loaded
+	int indexExisting = -1;
+	for (int i = 0; i < _plugins.size(); i++) {
+		// If we find the same name in our vector means we already loaded this library
+		if (_plugins[i].path == path) {
+			indexExisting = i;
+			ofLogVerbose("ofxVstHost") << "Library " << path << " already exist at index " << i << ". Not loading it again.";
+		}
+	}
+
+
+	// Load new library if it is not in our list already
+	PluginEntryProc mainEntry = 0;
+	PluginLoader *loader = 0;
+
+	if (indexExisting != -1) {
+		loader = &_plugins[indexExisting];
+	}
+	else {
+		_plugins.push_back(PluginLoader());
+		indexExisting = _plugins.size() - 1;
+		loader = &_plugins[indexExisting];
+       // PluginLoader loader;
+        if (!loader->loadLibrary (path.c_str()))
         {
             ofLogError("ofxVstHost") << "Failed to load VST Plugin library!";
             return false;
         }
         
-        // Add our plugin loader to our vector
-        _plugins.push_back(loader);
-        
-        // Overwrite index as it will be used below to access proper plugin
-        indexExisting = _plugins.size() - 1;
-    }
-    
-    
-    // Get main entry from our plugin vector
-    PluginEntryProc mainEntry = _plugins[indexExisting].getMainEntry ();
-    if (!mainEntry)
-    {
-        ofLogError("ofxVstHost") << "VST Plugin main entry not found!";
-        return false;
-    }
+		mainEntry = loader->mainProc;
 
+    }
     
     // Create the effect from this main entry
     AEffect* effect = mainEntry (HostCallback);
@@ -134,6 +133,8 @@ bool ofxVstHost::load(string path, string nameInfo)
     dispatcher(_effects[indexEffect], effSetProcessPrecision, 0, kVstProcessPrecision32);
     dispatcher(_effects[indexEffect], effMainsChanged, 0, 1);
     dispatcher(_effects[indexEffect], effStartProcess);
+
+	return true;
 }
 
 
@@ -314,7 +315,8 @@ string ofxVstHost::getEffectName(int indexEffect) const
     }
     else {
         ofLogError("ofxVstHost") << "getEffectName(...), indexEffect out of bound. Expected " << _names.size() - 1 << " max, got " << indexEffect;
-    }
+		return "";
+	}
 }
 
 //--------------------------------------------------------------
@@ -357,7 +359,8 @@ float ofxVstHost::getParameterValue(int indexEffect, int indexParam) const {
     }
     else {
         ofLogError("ofxVstHost") << "getParameterValue(...), indexEffect out of bound. Expected " << _effects.size() - 1 << " max, got " << indexEffect;
-    }
+		return 0;
+	}
 
 }
 

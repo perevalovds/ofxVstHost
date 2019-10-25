@@ -25,10 +25,13 @@ typedef AEffect* (*PluginEntryProc) (audioMasterCallback audioMaster);
 struct PluginLoader
 {
     // Pointer to our library
-    void* module;
+    HMODULE module;
     
     // Path to this library not to load it twice
     string path;
+
+	//main proc
+	PluginEntryProc mainProc;
     
     
     //--------------------------------------------------------------
@@ -48,30 +51,22 @@ struct PluginLoader
         // Save path
         path = fileName;
         
-#if _WIN32
-        module = LoadLibrary (fileName);
-        
-#elif TARGET_API_MAC_CARBON
-        CFStringRef fileNameString = CFStringCreateWithCString (NULL, fileName, kCFStringEncodingUTF8);
-        if (fileNameString == 0)
-            return false;
-        CFURLRef url = CFURLCreateWithFileSystemPath (NULL, fileNameString, kCFURLPOSIXPathStyle, false);
-        CFRelease (fileNameString);
-        if (url == 0)
-            return false;
-        module = CFBundleCreate (NULL, url);
-        CFRelease (url);
-        if (module && CFBundleLoadExecutable ((CFBundleRef)module) == false)
-            return false;
-        
-#elif __linux__
-        module = dlopen (fileName, RTLD_LAZY);
-        if (!module) {
-            fprintf (stderr, "%s\n", dlerror());
-            return false;
-        }
-#endif
-        return module != 0;
+        module = LoadLibraryA (fileName);
+
+		if (!module) {
+			cout << "Error loading VST DLL " << fileName << endl;
+			return false;
+		}
+
+		mainProc = getMainEntry();
+		//(PluginEntryProc)GetProcAddress((HMODULE)module, "VSTPluginMain");
+		
+		if (!mainProc) {
+			cout << "No main entry in VST DLL " << fileName << endl;
+			return false;
+		}
+
+        return true;
     }
     
     //--------------------------------------------------------------

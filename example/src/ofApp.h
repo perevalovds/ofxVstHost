@@ -1,7 +1,7 @@
 #pragma once
 
 #include "ofMain.h"
-#include "ofxVSTHost.h"
+#include "ofxVstHost.h"
 
 
 class ofApp : public ofBaseApp{

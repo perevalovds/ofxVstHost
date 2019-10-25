@@ -32,7 +32,7 @@ public:
     
     // Main controls
     void setup(float sampleRate = 48000.f, int blockSize = 512);
-    bool load(string path, string nameInfo = "");
+    bool load(string path, string nameInfo = "", bool to_data_path = true);
     void closeEffect(int index);
     void closePlugin(int index);
     
